@@ -1,0 +1,15 @@
+# Development Dockerfile for the Next.js frontend
+FROM node:18-alpine
+
+WORKDIR /app
+
+ENV HOST=0.0.0.0
+
+# Install dependencies separately to leverage Docker layer caching.
+COPY package*.json ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+EXPOSE 3000
+
+# Default command keeps hot reload running.
+CMD ["npm", "run", "dev"]
