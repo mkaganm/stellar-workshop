@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: ['npm', 'run', 'dev', '--', '--hostname', '0.0.0.0', '--port', '3000']
+
+  soroban:
+    build:
+      context: ./contracts
+      dockerfile: Dockerfile.soroban
+    volumes:
+      - ./contracts:/contracts
+    working_dir: /contracts
+    command: sleep infinity
+    tty: true
+    stdin_open: true
