@@ -1,0 +1,24 @@
+# Soroban tooling container used for building and deploying contracts
+FROM rust:1.80-slim
+
+# Install system dependencies required for building Soroban contracts and running the CLI.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash \
+        ca-certificates \
+        clang \
+        pkg-config \
+        libssl-dev \
+        git \
+        jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install the wasm32 target and Soroban CLI.
+RUN rustup target add wasm32-unknown-unknown \
+    && cargo install --locked soroban-cli
+
+WORKDIR /contracts
+
+COPY . .
+
+CMD ["bash"]

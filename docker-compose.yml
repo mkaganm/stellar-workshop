@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_STELLAR_RPC_URL: https://soroban-testnet.stellar.org:443
+      NEXT_PUBLIC_STELLAR_NETWORK_PASSPHRASE: Test SDF Network ; September 2015
+      NEXT_PUBLIC_CONTRACT_ID: ${NEXT_PUBLIC_CONTRACT_ID}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: ['npm', 'run', 'dev', '--', '--hostname', '0.0.0.0', '--port', '3000']
+
+  soroban:
+    build:
+      context: ./contracts
+      dockerfile: Dockerfile.soroban
+    working_dir: /contracts
+    volumes:
+      - ./contracts:/contracts
+    environment:
+      STELLAR_RPC_URL: https://soroban-testnet.stellar.org:443
+      STELLAR_NETWORK_PASSPHRASE: Test SDF Network ; September 2015
