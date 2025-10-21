@@ -1,5 +1,6 @@
 # Soroban tooling container used for building and deploying contracts
-FROM rust:1.80-slim
+# soroban-cli >= 23.x requires rustc >= 1.89
+FROM rust:1.90-slim
 
 # Install system dependencies required for building Soroban contracts and running the CLI.
 RUN apt-get update \
@@ -8,6 +9,8 @@ RUN apt-get update \
         ca-certificates \
         clang \
         pkg-config \
+        libdbus-1-dev \
+    libudev-dev \
         libssl-dev \
         git \
     && rm -rf /var/lib/apt/lists/*
