@@ -7,7 +7,8 @@ ENV HOST=0.0.0.0
 
 # Install dependencies separately to leverage Docker layer caching.
 COPY package*.json ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+# Always install based on package.json to avoid lockfile drift in dev
+RUN npm install
 
 EXPOSE 3000
 

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Freighter Direct Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .box {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success { border-left: 4px solid #10b981; }
+        .error { border-left: 4px solid #ef4444; }
+        .warning { border-left: 4px solid #f59e0b; }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #4f46e5; }
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Freighter Extension Direct Test</h1>
+    
+    <div id="status" class="box warning">
+        <div class="status">⏳ Checking...</div>
+        <p>Waiting for Freighter to load...</p>
+    </div>
+
+    <div class="box">
+        <button onclick="testFreighter()">🔄 Test Again</button>
+        <button onclick="testConnect()">🔗 Try Connect</button>
+        <button onclick="location.reload()">♻️ Refresh Page</button>
+    </div>
+
+    <div id="details" class="box">
+        <h3>Details:</h3>
+        <pre id="output">Starting tests...</pre>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+        
+        function log(msg) {
+            output.textContent += msg + '\n';
+            console.log(msg);
+        }
+
+        function updateStatus(icon, title, desc, className) {
+            status.className = 'box ' + className;
+            status.innerHTML = `
+                <div class="status">${icon} ${title}</div>
+                <p>${desc}</p>
+            `;
+        }
+
+        function testFreighter() {
+            output.textContent = '';
+            log('=== FREIGHTER TEST ===');
+            log('Time: ' + new Date().toLocaleTimeString());
+            log('');
+            
+            // Test 1: Check window object
+            log('1. Checking window.freighterApi...');
+            if (window.freighterApi) {
+                log('   ✅ FOUND! Freighter API is present');
+                log('   Available methods: ' + Object.keys(window.freighterApi).join(', '));
+                updateStatus('✅', 'Freighter Detected!', 'Extension is working correctly', 'success');
+                return true;
+            } else {
+                log('   ❌ NOT FOUND: window.freighterApi is undefined');
+            }
+            
+            // Test 2: Check all window keys
+            log('');
+            log('2. Searching for Freighter-related keys...');
+            const allKeys = Object.keys(window);
+            const freighterKeys = allKeys.filter(k => 
+                k.toLowerCase().includes('freighter') || 
+                k.toLowerCase().includes('stellar') ||
+                k.toLowerCase().includes('wallet')
+            );
+            
+            if (freighterKeys.length > 0) {
+                log('   ⚠️ Found related keys: ' + freighterKeys.join(', '));
+            } else {
+                log('   ❌ No Freighter-related keys found');
+            }
+            
+            // Test 3: Browser info
+            log('');
+            log('3. Browser Information:');
+            log('   User Agent: ' + navigator.userAgent);
+            log('   URL: ' + location.href);
+            log('   Protocol: ' + location.protocol);
+            
+            // Test 4: Extension detection
+            log('');
+            log('4. Extension Detection:');
+            log('   Total window keys: ' + allKeys.length);
+            
+            updateStatus('❌', 'Freighter NOT Detected', 
+                'Extension may not be installed or enabled for this site', 'error');
+            
+            return false;
+        }
+
+        async function testConnect() {
+            if (!window.freighterApi) {
+                alert('❌ Freighter API not found. Please install the extension first.');
+                return;
+            }
+            
+            log('');
+            log('=== CONNECTION TEST ===');
+            
+            try {
+                log('Requesting access...');
+                const result = await window.freighterApi.requestAccess();
+                log('✅ Success!');
+                log('Result: ' + JSON.stringify(result, null, 2));
+                
+                if (result.address) {
+                    updateStatus('✅', 'Connected!', 
+                        'Address: ' + result.address.slice(0, 10) + '...', 'success');
+                }
+            } catch (err) {
+                log('❌ Connection failed: ' + err.message);
+                updateStatus('❌', 'Connection Failed', err.message, 'error');
+            }
+        }
+
+        // Auto-test on load
+        let pollCount = 0;
+        const pollInterval = setInterval(() => {
+            pollCount++;
+            
+            if (window.freighterApi) {
+                clearInterval(pollInterval);
+                testFreighter();
+                return;
+            }
+            
+            if (pollCount >= 50) { // 5 seconds
+                clearInterval(pollInterval);
+                testFreighter();
+            }
+        }, 100);
+    </script>
+</body>
+</html>

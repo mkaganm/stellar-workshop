@@ -54,6 +54,7 @@ const simulateTransaction = async (tx: Transaction) => {
 };
 
 const prepareAndSign = async (tx: Transaction, publicKey: string) => {
+  // Use Freighter
   if (typeof window === 'undefined' || !window.freighterApi?.signTransaction) {
     throw new Error('Freighter wallet is required to sign transactions.');
   }

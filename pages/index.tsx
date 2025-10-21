@@ -17,9 +17,33 @@ export default function Home() {
     const storedKey = window.localStorage.getItem(STORAGE_KEY);
     if (storedKey) {
       router.replace('/main').catch(console.error);
+      return;
     }
 
-    setHasFreighter(Boolean(window.freighterApi));
+    // Check for Freighter immediately
+    const checkFreighter = () => {
+      setHasFreighter(Boolean(window.freighterApi));
+    };
+
+    checkFreighter();
+
+    // Poll for Freighter extension (it may load after page load)
+    const pollInterval = setInterval(() => {
+      if (window.freighterApi) {
+        setHasFreighter(true);
+        clearInterval(pollInterval);
+      }
+    }, 100);
+
+    // Stop polling after 3 seconds
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+    }, 3000);
+
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
+    };
   }, [router]);
 
   const connectWallet = useCallback(async () => {

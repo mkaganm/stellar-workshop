@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTRA BASIT FREIGHTER TEST</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: black;
+            color: lime;
+            padding: 50px;
+            font-size: 18px;
+        }
+        button {
+            background: lime;
+            color: black;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 20px;
+            background: #111;
+            border: 2px solid lime;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 FREIGHTER ULTRA BASIT TEST 🚨</h1>
+    <h2 id="status">Kontrol ediliyor...</h2>
+    
+    <div class="result" id="result"></div>
+    
+    <button onclick="testNow()">🔍 TEKRAR TEST ET</button>
+    <button onclick="tryConnect()">🔗 BAĞLAN</button>
+
+    <script>
+        const result = document.getElementById('result');
+        const status = document.getElementById('status');
+
+        function testNow() {
+            console.clear();
+            result.innerHTML = '<h3>TEST SONUÇLARI:</h3>';
+            
+            // Test 1: Basit kontrol
+            result.innerHTML += '<p><strong>1. window.freighterApi var mı?</strong></p>';
+            if (window.freighterApi) {
+                result.innerHTML += '<p style="color:lime">✅ EVET! Freighter bulundu!</p>';
+                result.innerHTML += '<p>Methods: ' + Object.keys(window.freighterApi).join(', ') + '</p>';
+                status.textContent = '✅ FREIGHTER BULUNDU!';
+                status.style.color = 'lime';
+                return;
+            } else {
+                result.innerHTML += '<p style="color:red">❌ HAYIR! window.freighterApi = undefined</p>';
+            }
+            
+            // Test 2: Window'daki tüm keyler
+            result.innerHTML += '<p><strong>2. Window objesinde "freighter" içeren key var mı?</strong></p>';
+            const allKeys = Object.keys(window);
+            const freighterKeys = allKeys.filter(k => k.toLowerCase().includes('freighter'));
+            
+            if (freighterKeys.length > 0) {
+                result.innerHTML += '<p style="color:yellow">⚠️ Bulundu: ' + freighterKeys.join(', ') + '</p>';
+            } else {
+                result.innerHTML += '<p style="color:red">❌ Hiçbir key bulunamadı</p>';
+            }
+            
+            // Test 3: Browser bilgisi
+            result.innerHTML += '<p><strong>3. Tarayıcı Bilgisi:</strong></p>';
+            result.innerHTML += '<p>User Agent: ' + navigator.userAgent + '</p>';
+            result.innerHTML += '<p>URL: ' + location.href + '</p>';
+            
+            // Final status
+            status.textContent = '❌ FREIGHTER BULUNAMADI!';
+            status.style.color = 'red';
+            
+            result.innerHTML += '<hr><p style="color:red"><strong>SONUÇ: Extension tarayıcıya inject edilmemiş!</strong></p>';
+            result.innerHTML += '<p>ÇÖZÜM:</p>';
+            result.innerHTML += '<ul>';
+            result.innerHTML += '<li>chrome://extensions → Freighter → Details</li>';
+            result.innerHTML += '<li>"Site access" → "On all sites" seç</li>';
+            result.innerHTML += '<li>Extension\'ı reload et (🔄)</li>';
+            result.innerHTML += '<li>Chrome\'u TAMAMEN kapat ve aç</li>';
+            result.innerHTML += '</ul>';
+        }
+
+        async function tryConnect() {
+            if (!window.freighterApi) {
+                alert('❌ Freighter API bulunamadı! Önce extension\'ı düzgün yükle.');
+                return;
+            }
+            
+            try {
+                const response = await window.freighterApi.requestAccess();
+                result.innerHTML += '<hr><p style="color:lime">✅ BAĞLANTI BAŞARILI!</p>';
+                result.innerHTML += '<p>Address: ' + response.address + '</p>';
+                alert('✅ Başarılı! Address: ' + response.address);
+            } catch (err) {
+                result.innerHTML += '<hr><p style="color:red">❌ Bağlantı hatası: ' + err.message + '</p>';
+                alert('❌ Hata: ' + err.message);
+            }
+        }
+
+        // Sayfa yüklendiğinde otomatik test
+        let checkCount = 0;
+        const interval = setInterval(() => {
+            checkCount++;
+            
+            if (window.freighterApi) {
+                clearInterval(interval);
+                testNow();
+            } else if (checkCount >= 30) { // 3 saniye
+                clearInterval(interval);
+                testNow();
+            }
+        }, 100);
+
+        // Console'a da bilgi ver
+        console.log('%c🔍 FREIGHTER TEST BAŞLATILDI', 'color: lime; font-size: 20px');
+        console.log('Sayfa: ' + location.href);
+        console.log('30 kez kontrol edilecek (3 saniye)...');
+    </script>
+</body>
+</html>

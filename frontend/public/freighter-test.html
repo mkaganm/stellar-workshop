@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Freighter Extension Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Freighter Extension Debug</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        log('Starting Freighter detection...');
+        
+        // Test 1: Check immediately
+        log(`Window has freighterApi: ${!!window.freighterApi}`, window.freighterApi ? 'success' : 'error');
+        
+        // Test 2: Check all window properties
+        const freighterKeys = Object.keys(window).filter(k => 
+            k.toLowerCase().includes('freighter') || k.toLowerCase().includes('stellar')
+        );
+        log(`Freighter/Stellar related keys: ${freighterKeys.join(', ') || 'NONE'}`, freighterKeys.length > 0 ? 'warning' : 'error');
+        
+        // Test 3: Poll for 5 seconds
+        let pollCount = 0;
+        const interval = setInterval(() => {
+            pollCount++;
+            if (window.freighterApi) {
+                log(`✅ Freighter detected after ${pollCount * 100}ms!`, 'success');
+                log(`Available methods: ${Object.keys(window.freighterApi).join(', ')}`, 'success');
+                clearInterval(interval);
+                
+                // Test connection
+                setTimeout(async () => {
+                    try {
+                        const result = await window.freighterApi.requestAccess();
+                        log(`Connection result: ${JSON.stringify(result)}`, result.address ? 'success' : 'error');
+                    } catch (err) {
+                        log(`Connection error: ${err.message}`, 'error');
+                    }
+                }, 500);
+            } else if (pollCount >= 50) {
+                log('❌ Freighter NOT detected after 5 seconds', 'error');
+                log(`User Agent: ${navigator.userAgent}`, 'warning');
+                log(`Protocol: ${window.location.protocol}`, 'warning');
+                log(`Hostname: ${window.location.hostname}`, 'warning');
+                clearInterval(interval);
+            }
+        }, 100);
+        
+        // Test 4: Listen for custom events
+        document.addEventListener('freighter-loaded', () => {
+            log('📡 Received freighter-loaded event', 'success');
+        });
+        
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type && event.data.type.includes('FREIGHTER')) {
+                log(`📨 Received message: ${JSON.stringify(event.data)}`, 'warning');
+            }
+        });
+    </script>
+</body>
+</html>
