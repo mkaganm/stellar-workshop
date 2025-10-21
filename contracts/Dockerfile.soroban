@@ -2,12 +2,16 @@
 # soroban-cli >= 23.x requires rustc >= 1.89
 FROM rust:1.90-slim
 
+# Ensure cargo bin is on PATH for non-login shells
+ENV PATH="/usr/local/cargo/bin:${PATH}"
+
 # Install system dependencies required for building Soroban contracts and running the CLI.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         bash \
         ca-certificates \
         clang \
+    build-essential \
         pkg-config \
         libdbus-1-dev \
     libudev-dev \
@@ -15,8 +19,9 @@ RUN apt-get update \
         git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install the wasm32 target and Soroban CLI.
+# Install the wasm32 targets and Soroban CLI.
 RUN rustup target add wasm32-unknown-unknown \
+    && rustup target add wasm32v1-none \
     && cargo install --locked soroban-cli
 
 WORKDIR /contracts
